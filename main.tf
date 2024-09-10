@@ -37,7 +37,6 @@ resource "github_branch_protection" "main" {
     contexts = concat(
       var.support_releases ? ["pr-ci / semantic-pr-title", "release / release"] : [],
       var.ci_contexts,
-      ["license/cla"]
     )
   }
 
