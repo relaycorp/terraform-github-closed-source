@@ -24,3 +24,31 @@ resource "github_repository" "main" {
     ignore_changes = [auto_init]
   }
 }
+
+resource "github_branch_protection" "main" {
+  repository_id = github_repository.main.node_id
+  pattern       = "main"
+
+  required_linear_history         = true
+  require_conversation_resolution = true
+
+  required_status_checks {
+    strict = true
+    contexts = concat(
+      var.support_releases ? ["pr-ci / semantic-pr-title", "release / release"] : [],
+      var.ci_contexts,
+    )
+  }
+
+  required_pull_request_reviews {
+    dismiss_stale_reviews           = true
+    required_approving_review_count = 1
+  }
+
+  restrict_pushes {
+    blocks_creations = true
+    push_allowances = [
+      local.github_actions_app_node_id, # Allow @semantic-release/github to create GH releases
+    ]
+  }
+}
